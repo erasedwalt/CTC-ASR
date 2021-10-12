@@ -1,0 +1,44 @@
+{
+  "name": "jasper_1b",
+  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
+  "wandb_project": "Jspr",
+  "chkpt_path": "",
+  "arch": {
+    "name": "Jasper",
+    "args": {
+      "B_repeats": 1,
+      "R": 3,
+      "num_features": 64,
+      "vocab_size": 34
+    }
+  },
+  "optimizer": {
+    "name": "Adam",
+    "args": {
+      "lr": 1e-4,
+      "weight_decay": 0.0
+    }
+  },
+  "data": {
+    "train": "OneBatchDataset",
+    "test": "OneBatchDataset",
+    "train_shuffle": false,
+    "bsz": 20,
+    "num_workers": 20,
+    "train_args":{
+      "length": 10000
+    },
+    "test_args":{
+      "length": 20
+    }
+  },
+  "criterion": {
+    "name": "CTCLoss",
+    "args": {}
+  },
+  "clip_grad": 10,
+  "best_wer": 1,
+  "device": "cuda",
+  "device_ids": [0, 3],
+  "eval_interval": 100
+}

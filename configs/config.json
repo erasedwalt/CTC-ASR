@@ -1,0 +1,56 @@
+{
+  "name": "qnet_stage2",
+  "logging": "WandbLogger",
+  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
+  "wandb_project": "HW-QuartzNet",
+  "chkpt_path": "",
+  "arch": {
+    "name": "QuartzNet",
+    "args": {
+      "B_repeats": 3,
+      "R": 5,
+      "num_features": 64,
+      "vocab_size": 34
+    }
+  },
+  "optimizer": {
+    "name": "Adam",
+    "args": {
+      "lr": 1e-3,
+      "weight_decay": 0.0
+    }
+  },
+  "data": {
+    "train": "GolosDataset",
+    "test": "GolosDataset",
+    "train_shuffle": true,
+    "bsz": 32,
+    "num_workers": 20,
+    "train_args":{
+      "sample_rate": 16000,
+      "n_mels": 64,
+      "augmentation": true,
+      "tempo": 0.2,
+      "pitch": 300,
+      "noise_factor": 10,
+      "time": 30,
+      "freq": 10
+    },
+    "test_args": {
+      "sample_rate": 16000,
+      "n_mels": 64,
+      "augmentation": false
+    }
+  },
+  "criterion": {
+    "name": "CTCLoss",
+    "args": {}
+  },
+  "decoder": "GreedyDecoder",
+  "beam_size": 25,
+  "clip_grad": 10,
+  "best_wer": 0.71,
+  "device": "cuda",
+  "device_ids": [3, 0, 2, 1],
+  "eval_interval": 10
+}
