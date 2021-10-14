@@ -25,4 +25,3 @@ def collate(batch):
     input_lens = torch.tensor(input_lens)
     target_lens = torch.tensor(target_lens)
     return specs, texts, input_lens, target_lens
-

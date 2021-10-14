@@ -1,8 +1,12 @@
 import torch
+import string
 
 
-ALPHABET = '^йцукенгшщзхъфывапролджэячсмитьбю '
-assert len(ALPHABET) == 34
+# ALPHABET = '^йцукенгшщзхъфывапролджэячсмитьбю '
+# assert len(ALPHABET) == 34
+
+ALPHABET = '^' + ''.join(set(string.ascii_letters.lower())) + ' ' # '^qwertyuiopasdfghjklzxcvbnm '
+assert len(ALPHABET) == 28
 
 
 def get_maps():
@@ -12,6 +16,9 @@ def get_maps():
 
 
 def preprocess_text(text, sym2id):
-    text = list(filter(ALPHABET.__contains__, text.lower()))
-    encoded = torch.tensor(list(map(lambda x: sym2id[x], text)))
+    def process_sym(x):
+        if x in ALPHABET:
+            return sym2id[x]
+        return sym2id[' ']
+    encoded = torch.tensor([process_sym(x) for x in text.lower()])
     return encoded

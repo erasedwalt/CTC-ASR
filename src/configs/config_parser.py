@@ -2,12 +2,14 @@ import json
 
 import wandb
 import torch
+import torch_optimizer as optim
 from torch.utils.data import DataLoader
 
 import models
 import data
 import utils
 import loggers
+from warmup_wrapper import WarmupWrapper
 
 
 class Config:
@@ -76,8 +78,13 @@ class Config:
         return train_dataloader, test_dataloader
 
     def get_optimizer(self, model_parameters):
-        optimizer_class = getattr(torch.optim, self.config['optimizer']['name'])
+        try:
+            optimizer_class = getattr(optim, self.config['optimizer']['name'])
+        except:
+            optimizer_class = getattr(torch.optim, self.config['optimizer']['name'])
         optimizer = optimizer_class(model_parameters, **self.config['optimizer']['args'])
+        if 'warmup' in self.config['optimizer']:
+            optimizer = WarmupWrapper(self.config['optimizer']['warmup'], optimizer, self.config['optimizer']['args']['lr'])
         print(optimizer)
         return optimizer
 

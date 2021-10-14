@@ -55,7 +55,7 @@ def train(
                     continue
                 optimizer.step()
 
-                lr = optimizer.param_groups[0]['lr']
+                lr = optimizer.rate()
                 to_log = {'train_loss': float(loss.item()), 'grad_norm': float(norm), 'lr': float(lr)}
                 if logger:
                     logger.log_metrics(to_log)
@@ -101,17 +101,18 @@ def evaluate(
             aver_test_loss += loss.item()
 
             rand = int(np.random.random_integers(0, texts.shape[0], 1))
-            pred_texts = decoder(preds.detach().cpu())
-             
+            pred_texts = decoder(preds.detach().cpu(), input_lens)
+ 
             for i in range(texts.shape[0]):
                 text = ''.join(map(lambda x: id2sym[x], texts[i].numpy()))
+                text = text[:target_lens[i]]
                 pred_text = pred_texts[i]
                 total_wer.append(wer(text, pred_text))
                 total_cer.append(cer(text, pred_text))
                 if i == rand and j % 100 == 0:
                     logging_text = []
                     logging_text.append('------------------------------------')
-                    logging_text.append('Truth:\n\t' + text.replace('^', ''))
+                    logging_text.append('Truth:\n\t' + text)
                     logging_text.append('Pred:\n\t' + pred_text)
                     logging_text = '\n'.join(logging_text)
                     print(logging_text)

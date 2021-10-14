@@ -9,8 +9,8 @@ class GreedyDecoder:
     def __init__(self, id2sym: Dict[int, str]):
         self.id2sym = id2sym
 
-    def __call__(self, logits):
-        return greedy_decoder(logits, self.id2sym)
+    def __call__(self, logits, input_lens):
+        return greedy_decoder(logits, input_lens, self.id2sym)
 
 
 class BeamSearchDecoder:
@@ -18,19 +18,21 @@ class BeamSearchDecoder:
         self.beam_size = beam_size
         self.id2sym = id2sym
 
-    def __call__(self, logits):
+    def __call__(self, logits, input_lens):
         logits = logits.transpose(1, 2)
         texts = []
-        for line in tqdm(logits):
+        for i, line in enumerate(tqdm(logits)):
+            line = line[:input_lens[i]]
             text = beam_search(line, self.beam_size, self.id2sym)[0][0]
             texts.append(text)
         return texts
 
 
-def greedy_decoder(logits: torch.Tensor, id2sym: Dict[int, str]) -> str:
+def greedy_decoder(logits: torch.Tensor, input_lens: torch.Tensor, id2sym: Dict[int, str]) -> str:
     argmaxes = logits.argmax(dim=1).numpy()
     texts = []
-    for sentence in argmaxes:
+    for j, sentence in enumerate(argmaxes):
+        sentence = sentence[:input_lens[j]]
         text = []
         for i, idx in enumerate(sentence):
             if idx == 0:

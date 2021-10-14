@@ -95,8 +95,14 @@ class QuartzNet(nn.Module):
                 in_channels=num_features,
                 out_channels=256,
                 kernel_size=33,
+                groups=num_features,
                 padding=33 // 2,
                 stride=2
+            ),
+            nn.Conv1d(
+                in_channels=256,
+                out_channels=256,
+                kernel_size=1
             ),
             nn.BatchNorm1d(num_features=256),
             nn.ReLU(inplace=True)

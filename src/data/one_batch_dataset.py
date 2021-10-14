@@ -1,33 +1,26 @@
-import torch
-import torchaudio
-from torch.utils.data import Dataset
-
+import pandas as pd
 from tqdm import tqdm
+import os
 
-from .golos_dataset import read_manifest
-from utils import preprocess_text, get_maps
+from .base_dataset import BaseDataset
 
 
-class OneBatchDataset(Dataset):
+class OneBatchDataset(BaseDataset):
     def __init__(self, task, length):
+        self.main_ds = super().__init__()
         self.length = length
-        self.manifest = read_manifest('test')[:20]
-        self.specs = []
-        self.computer = torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_mels=64)
-        for idx in tqdm(range(len(self.manifest))):
-            a, r = torchaudio.sox_effects.apply_effects_file(
-                    '../datasets/test_opus/crowd/' + self.manifest[idx]['audio_filepath'],
-                    effects = [['channels', '1'], ['rate', '16000']]
-            )
-            spec = self.computer(a)
-            spec = spec / (torch.max(torch.abs(spec) + 1e-7))
-            self.specs.append(spec)
-        _, self.sym2id = get_maps()
+        self.info = pd.read_csv('../one_batch/metadata.csv', index_col=0)
+        self.info.index = range(self.info.shape[0])
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx):
-        idx = idx % 20
-        text = preprocess_text(self.manifest[idx]['text'], self.sym2id)
-        return self.specs[idx], text, self.specs[idx].shape[-1], len(text)
+        try:
+            row = self.info.loc[idx % 20]
+            audio_path = os.path.join('../one_batch/wavs', row[0] + '.wav')
+            text = str(row[2])
+        except:
+            print(row)
+            exit(1)
+        return super().load_one(audio_path, text)
