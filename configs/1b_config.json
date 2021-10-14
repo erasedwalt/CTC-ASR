@@ -42,6 +42,6 @@
   "clip_grad": 10,
   "best_wer": 1,
   "device": "cuda",
-  "device_ids": [3],
+  "device_ids": [0],
   "eval_interval": 200
 }
