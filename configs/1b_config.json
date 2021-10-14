@@ -1,9 +1,8 @@
 {
   "name": "qnet",
-  "logging": "WandbLogger",
-  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
-  "wandb_project": "OneBatch",
+  "logging": "",
   "chkpt_path": "",
+  "epochs": 1,
   "decoder": "GreedyDecoder",
   "arch": {
     "name": "QuartzNet",
@@ -23,16 +22,16 @@
     }
   },
   "data": {
-    "train": "OneBatchDataset",
-    "test": "OneBatchDataset",
+    "train": ["OneBatchDataset"],
+    "test": ["OneBatchDataset"],
     "train_shuffle": false,
     "bsz": 20,
     "num_workers": 20,
     "train_args":{
-      "length": 10000
+      "length": 4000
     },
     "test_args":{
-      "length": 100
+      "length": 20
     }
   },
   "criterion": {
@@ -42,6 +41,6 @@
   "clip_grad": 10,
   "best_wer": 1,
   "device": "cuda",
-  "device_ids": [3],
+  "device_ids": [0],
   "eval_interval": 200
 }

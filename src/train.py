@@ -22,6 +22,7 @@ np.random.seed(SEED)
 
 
 def train(
+        epochs: int,
         model: nn.Module, 
         optimizer: optim.Optimizer, 
         criterion: nn.Module,
@@ -38,7 +39,7 @@ def train(
 ) -> None:
 
     model = model.to(device)
-    while True:
+    for epoch in range(epochs):
         model.train()
         for i, (specs, texts, input_lens, target_lens) in enumerate(tqdm(train_dl)):
             try:
@@ -59,6 +60,8 @@ def train(
                 to_log = {'train_loss': float(loss.item()), 'grad_norm': float(norm), 'lr': float(lr)}
                 if logger:
                     logger.log_metrics(to_log)
+                else:
+                    print(to_log)
 
                 if (i + 1) % eval_interval == 0:
                     best_wer = evaluate(model, criterion, test_dl, logger, best_wer, device, id2sym,
@@ -115,9 +118,10 @@ def evaluate(
                     logging_text.append('Truth:\n\t' + text)
                     logging_text.append('Pred:\n\t' + pred_text)
                     logging_text = '\n'.join(logging_text)
-                    print(logging_text)
                     if logger:
                         logger.log_text('text', logging_text)
+                    else:
+                        print(logging_text)
 
         aver_wer = np.mean(total_wer)
         aver_cer = np.mean(total_cer)
@@ -129,6 +133,8 @@ def evaluate(
         to_log = {'wer': aver_wer, 'cer': aver_cer, 'best_wer': best_wer, 'test_loss': aver_test_loss}
         if logger:
             logger.log_metrics(to_log)
+        else:
+            print(to_log)
     return float(best_wer)
 
 
@@ -155,6 +161,6 @@ if __name__ == '__main__':
     train_dataloader, test_dataloader = config.get_dataloaders()
     decoder = config.get_decoder(id2sym)
 
-    train(model, optimizer, criterion, train_dataloader,
+    train(config.epochs, model, optimizer, criterion, train_dataloader,
           test_dataloader, logger, config.device, config.clip_grad, id2sym,
           config.eval_interval, config.best_wer, config.name, decoder)
