@@ -3,7 +3,7 @@ import json
 import wandb
 import torch
 import torch_optimizer as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 
 import models
 import data
@@ -28,6 +28,7 @@ class Config:
         self.clip_grad = self.config['clip_grad']
         self.eval_interval = self.config['eval_interval']
         self.best_wer = float(self.config['best_wer'])
+        self.epochs = self.config['epochs']
         print(self.config)
 
 
@@ -54,8 +55,15 @@ class Config:
         return model
 
     def get_dataloaders(self):
-        train_dataset_class = getattr(data, self.config['data']['train'])
-        train_dataset = train_dataset_class('train', **self.config['data']['train_args'])
+        train_datasets = []
+        for train_dataset_name in self.config['data']['train']:
+            train_dataset_class = getattr(data, train_dataset_name)
+            train_dataset = train_dataset_class('train', **self.config['data']['train_args'])
+            train_datasets.append(train_dataset)
+        if len(train_datasets) == 1:
+            train_dataset = train_datasets[0]
+        else:
+            train_dataset = ConcatDataset(train_datasets)
         train_dataloader = DataLoader(
             train_dataset,
             batch_size=self.config['data']['bsz'],
@@ -64,8 +72,16 @@ class Config:
             num_workers=self.config['data']['num_workers'],
             drop_last=True
         )
-        test_dataset_class = getattr(data, self.config['data']['test'])
-        test_dataset = test_dataset_class('test', **self.config['data']['test_args'])
+
+        test_datasets = []
+        for test_dataset_name in self.config['data']['test']:
+            test_dataset_class = getattr(data, test_dataset_name)
+            test_dataset = test_dataset_class('test', **self.config['data']['test_args'])
+            test_datasets.append(test_dataset)
+        if  len(test_datasets) == 1:
+            test_dataset = test_datasets[0]
+        else:
+            test_dataset = ConcatDataset(test_datasets)
         test_dataloader = DataLoader(
             test_dataset,
             batch_size=self.config['data']['bsz'],
