@@ -22,8 +22,18 @@
     }
   },
   "data": {
-    "train": ["OneBatchDataset"],
-    "test": ["OneBatchDataset"],
+    "train": [
+      {
+        "name": "OneBatchDataset",
+	"args": {}
+      }
+    ],
+    "test": [
+      {
+        "name": "OneBatchDataset",
+	"args": {}
+      }
+    ],
     "train_shuffle": false,
     "bsz": 20,
     "num_workers": 20,

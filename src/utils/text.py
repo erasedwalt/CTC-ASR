@@ -16,9 +16,5 @@ def get_maps():
 
 
 def preprocess_text(text, sym2id):
-    def process_sym(x):
-        if x in ALPHABET:
-            return sym2id[x]
-        return sym2id[' ']
-    encoded = torch.tensor([process_sym(x) for x in text.lower()])
+    encoded = torch.tensor([sym2id[x] for x in text.lower() if x in ALPHABET])
     return encoded

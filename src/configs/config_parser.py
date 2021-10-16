@@ -9,7 +9,9 @@ import models
 import data
 import utils
 import loggers
+import schedulers
 from warmup_wrapper import WarmupWrapper
+from data import Collater
 
 
 class Config:
@@ -36,8 +38,10 @@ class Config:
         try:
             logger_class = getattr(loggers, self.config['logging'])
             logger = logger_class(self.config)
+            self.logger = logger
             return logger
         except:
+            self.logger = None
             return None
 
     def get_model(self):
@@ -55,41 +59,46 @@ class Config:
         return model
 
     def get_dataloaders(self):
+        collater = Collater(self.config['arch']['name'])
         train_datasets = []
-        for train_dataset_name in self.config['data']['train']:
-            train_dataset_class = getattr(data, train_dataset_name)
-            train_dataset = train_dataset_class('train', **self.config['data']['train_args'])
+        for train_dataset_info in self.config['data']['train']:
+            train_dataset_class = getattr(data, train_dataset_info['name'])
+            train_dataset = train_dataset_class('train', **train_dataset_info['args'], **self.config['data']['train_args'])
             train_datasets.append(train_dataset)
         if len(train_datasets) == 1:
             train_dataset = train_datasets[0]
         else:
             train_dataset = ConcatDataset(train_datasets)
+
         train_dataloader = DataLoader(
             train_dataset,
             batch_size=self.config['data']['bsz'],
             shuffle=self.config['data']['train_shuffle'],
-            collate_fn=data.collate,
+            collate_fn=collater,
             num_workers=self.config['data']['num_workers'],
             drop_last=True
         )
 
         test_datasets = []
-        for test_dataset_name in self.config['data']['test']:
-            test_dataset_class = getattr(data, test_dataset_name)
-            test_dataset = test_dataset_class('test', **self.config['data']['test_args'])
+        for test_dataset_info in self.config['data']['test']:
+            test_dataset_class = getattr(data, test_dataset_info['name'])
+            test_dataset = test_dataset_class('test', **test_dataset_info['args'], **self.config['data']['test_args'])
             test_datasets.append(test_dataset)
         if  len(test_datasets) == 1:
             test_dataset = test_datasets[0]
         else:
             test_dataset = ConcatDataset(test_datasets)
+
         test_dataloader = DataLoader(
             test_dataset,
             batch_size=self.config['data']['bsz'],
             shuffle=False,
-            collate_fn=data.collate,
+            collate_fn=collater,
             num_workers=self.config['data']['num_workers'],
             drop_last=False
         )
+        if self.logger:
+            self.logger.init_datasets(train_dataset, test_dataset)
         print('Dataloaders are ready')
         return train_dataloader, test_dataloader
 
@@ -101,8 +110,13 @@ class Config:
         optimizer = optimizer_class(model_parameters, **self.config['optimizer']['args'])
         if 'warmup' in self.config['optimizer']:
             optimizer = WarmupWrapper(self.config['optimizer']['warmup'], optimizer, self.config['optimizer']['args']['lr'])
+            scheduler = None
+        elif 'scheduler' in self.config['optimizer']:
+            scheduler_class = getattr(schedulers, self.config['optimizer']['scheduler']['name'])
+            scheduler = scheduler_class(optimizer, **self.config['optimizer']['scheduler']['args'])
         print(optimizer)
-        return optimizer
+        print(scheduler)
+        return optimizer, scheduler
 
     def get_criterion(self):
         criterion_class = getattr(torch.nn, self.config['criterion']['name'])
