@@ -4,10 +4,10 @@
   "chkpt_path": "",
   "epochs": 1,
   "arch": {
-    "name": "Jasper",
+    "name": "QuartzNet",
     "args": {
       "B_repeats": 1,
-      "R": 3,
+      "R": 5,
       "num_features": 64,
       "vocab_size": 28
     }
