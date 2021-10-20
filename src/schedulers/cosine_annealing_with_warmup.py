@@ -5,6 +5,9 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 class CosineAnnealingWarmup(_LRScheduler):
     """
+    Cosine Annealing optimizer with warmup
+
+    Args:
         optimizer (Optimizer): Wrapped optimizer.
         first_cycle_steps (int): First cycle step size.
         cycle_mult(float): Cycle steps magnification. Default: -1.
@@ -24,7 +27,7 @@ class CosineAnnealingWarmup(_LRScheduler):
                  warmup_steps : int = 0,
                  gamma : float = 1.,
                  last_epoch : int = -1
-        ):
+    ) -> None:
         assert warmup_steps < first_cycle_steps
 
         self.first_cycle_steps = first_cycle_steps # first cycle step size
@@ -44,13 +47,13 @@ class CosineAnnealingWarmup(_LRScheduler):
         # set learning rate min_lr
         self.init_lr()
 
-    def init_lr(self):
+    def init_lr(self) -> None:
         self.base_lrs = []
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.min_lr
             self.base_lrs.append(self.min_lr)
 
-    def get_lr(self):
+    def get_lr(self) -> list:
         if self.step_in_cycle == -1:
             return self.base_lrs
         elif self.step_in_cycle < self.warmup_steps:
@@ -61,7 +64,7 @@ class CosineAnnealingWarmup(_LRScheduler):
                                     / (self.cur_cycle_steps - self.warmup_steps))) / 2
                     for base_lr in self.base_lrs]
 
-    def step(self, epoch=None):
+    def step(self, epoch=None) -> None:
         if epoch is None:
             epoch = self.last_epoch + 1
             self.step_in_cycle = self.step_in_cycle + 1

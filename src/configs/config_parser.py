@@ -1,4 +1,6 @@
 import json
+from typing import Tuple, Dict
+from collections.abc import Generator
 
 import wandb
 import torch
@@ -15,7 +17,13 @@ from data import Collater
 
 
 class Config:
-    def __init__(self, config_path):
+    """
+    Config parser.
+
+    Args:
+        config_path (str): Path to config
+    """
+    def __init__(self, config_path: str) -> None:
         with open(config_path, 'r') as fp:
             self.config = json.load(fp)
         
@@ -35,6 +43,9 @@ class Config:
 
 
     def get_logger(self):
+        """
+        Create a logger.
+        """
         try:
             logger_class = getattr(loggers, self.config['logging'])
             logger = logger_class(self.config)
@@ -44,11 +55,14 @@ class Config:
             self.logger = None
             return None
 
-    def get_model(self):
+    def get_model(self) -> torch.nn.Module:
+        """
+        Create a model and maybe load weights from checkpoint.
+        """
         model_class = getattr(models, self.config['arch']['name'])
         model = model_class(**self.config['arch']['args'])
         if len(self.config['chkpt_path']) > 0:
-            model.load_state_dict(torch.load(self.config['chkpt_path']))
+            model.load_state_dict(torch.load(self.config['chkpt_path'], map_location='cpu'))
         if self.config['device'] == 'cuda':
             model = torch.nn.DataParallel(model.to(self.device), device_ids=self.device_ids)
         elif self.config['device'] == 'cpu':
@@ -58,7 +72,10 @@ class Config:
         print(f'Trainable parameters: {trainable_params}')
         return model
 
-    def get_dataloaders(self):
+    def get_dataloaders(self) -> Tuple[DataLoader]:
+        """
+        Create train and test dataloaders.
+        """
         collater = Collater(self.config['arch']['name'])
         train_datasets = []
         for train_dataset_info in self.config['data']['train']:
@@ -102,7 +119,10 @@ class Config:
         print('Dataloaders are ready')
         return train_dataloader, test_dataloader
 
-    def get_optimizer(self, model_parameters):
+    def get_optimizer(self, model_parameters: Generator) -> torch.optim.Optimizer:
+        """
+        Create a optimizer.
+        """
         try:
             optimizer_class = getattr(optim, self.config['optimizer']['name'])
         except:
@@ -118,16 +138,19 @@ class Config:
         print(scheduler)
         return optimizer, scheduler
 
-    def get_criterion(self):
+    def get_criterion(self) -> torch.nn.Module:
+        """
+        Create a criterion to train.
+        """
         criterion_class = getattr(torch.nn, self.config['criterion']['name'])
         criterion = criterion_class(**self.config['criterion']['args'])
         print(f'Using criterion: {criterion}')
         return criterion
 
-    def get_decoder(self, id2sym):
-        decoder_class = getattr(utils, self.config['decoder'])
-        if self.config['decoder'] == 'BeamSearchDecoder':
-            decoder = decoder_class(id2sym, self.config['beam_size'])
-        else:
-            decoder = decoder_class(id2sym)
+    def get_decoder(self):
+        """
+        Create a decoder.
+        """
+        decoder_class = getattr(utils, self.config['decoder']['name'])
+        decoder = decoder_class(**self.config['decoder']['args'])
         return decoder

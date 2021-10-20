@@ -169,7 +169,7 @@ if __name__ == '__main__':
     criterion = config.get_criterion()
     logger = config.get_logger()
     train_dataloader, test_dataloader = config.get_dataloaders()
-    decoder = config.get_decoder(id2sym)
+    decoder = config.get_decoder()
 
     train(config.epochs, model, optimizer, scheduler, criterion, train_dataloader,
           test_dataloader, logger, config.device, config.clip_grad, id2sym,

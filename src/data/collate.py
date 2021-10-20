@@ -1,8 +1,15 @@
 import torch
-from math import ceil
 
+from math import ceil
+from typing import Tuple
 
 class Collater:
+    """
+    Collater that takes into account model time downsampling
+
+    Args:
+        model_name (str): Model name
+    """
     def __init__(self, model_name):
         assert model_name in ['Jasper', 'QuartzNet', 'Citrinet']
 
@@ -11,7 +18,7 @@ class Collater:
         elif model_name == 'Citrinet':
             self.downsample = 4
 
-    def __call__(self, batch):
+    def __call__(self, batch: list) -> Tuple[torch.Tensor]:
         max_input_len = max(batch, key=lambda x: x[2])[2]
         max_target_len = max(batch, key=lambda x: x[3])[3]
         specs = []

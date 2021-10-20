@@ -2,8 +2,14 @@ import torch
 
 
 class WarmupWrapper:
-    "Optimizer wrapper for implement warmup updates."
-    def __init__(self, warmup, optimizer, max_lr):
+    """
+    Optimizer wrapper for implement warmup updates.
+    Args:
+        warmup (int): Number of warmup steps
+        optimizer (Optimizer): Optimizer
+        max_lr (float): Max lr after warmup
+    """
+    def __init__(self, warmup: int, optimizer: torch.optim.Optimizer, max_lr: float) -> None:
         self.optimizer = optimizer
         self._step = 0
         self._rate = 0

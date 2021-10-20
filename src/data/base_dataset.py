@@ -12,6 +12,15 @@ from augmentations import AudioAugmentator, SpecAugmentator
 
 
 class BaseDataset(Dataset):
+    """
+    Base dataset class
+    
+    Args:
+        sample_rate (int): Sample rate
+        n_mels (int): Number of mels in MelSpectrogram
+        augmantation (bool): Whether to use augmentation
+        Other parameters see in augmentations.
+    """
     def __init__(
             self,
             sample_rate: int = 16000,
@@ -38,7 +47,7 @@ class BaseDataset(Dataset):
 
         _, self.sym2id = get_maps()
 
-    def load_one(self, audio_path, text) -> Tuple[torch.Tensor, str, int]:
+    def load_one(self, audio_path: str, text: str) -> Tuple[torch.Tensor, str, int]:
         text_preprocess = preprocess_text(text, self.sym2id)
         try:
             a, r = torchaudio.sox_effects.apply_effects_file(

@@ -1,29 +1,73 @@
 import torch
+from fast_ctc_decode import beam_search
+from pyctcdecode import build_ctcdecoder
 
-from typing import Dict
+from typing import Dict, List
 from collections import defaultdict
 from tqdm import tqdm
 
+from .text import ALPHABET, get_maps
+
 
 class GreedyDecoder:
-    def __init__(self, id2sym: Dict[int, str]):
-        self.id2sym = id2sym
+    """
+    Simple argmax decoder
+    """
+    def __init__(self) -> None:
+        self.id2sym, _ = get_maps()
 
-    def __call__(self, logits, input_lens):
+    def __call__(self, logits: torch.Tensor, input_lens: torch.Tensor) -> List[str]:
         return greedy_decoder(logits, input_lens, self.id2sym)
 
 
 class BeamSearchDecoder:
-    def __init__(self, id2sym: Dict[int, str], beam_size: int = 100):
-        self.beam_size = beam_size
-        self.id2sym = id2sym
+    """
+    Vanilla beam search decoder
 
-    def __call__(self, logits, input_lens):
+    Args:
+        beam_size (int): Beam size
+    """
+    def __init__(self, beam_size: int = 100) -> None:
+        self.beam_size = beam_size
+
+    def __call__(self, logits: torch.Tensor, input_lens: torch.Tensor) -> List[str]:
         logits = logits.transpose(1, 2)
         texts = []
         for i, line in enumerate(tqdm(logits)):
             line = line[:input_lens[i]]
-            text = beam_search(line, self.beam_size, self.id2sym)[0][0]
+            text = beam_search(line.exp().numpy(), ALPHABET, beam_size=self.beam_size)[0]
+            texts.append(text)
+        return texts
+
+
+class LMBeamSearchDecoder:
+    """
+    Beam search with LM shallow fusion decoder
+
+    Args:
+        lm_path (str): Path to KenLM language model
+        beam_size (int): Beam size
+        alpha (float, optional): Alpha in shallow fusion
+        beta (float, optional): Beat in shallow fusion
+    """
+    def __init__(self, lm_path: str, beam_size: int, alpha: float = 0.5, beta: float = 1.0) -> None:
+        print('Loading LM...')
+        self.decoder = build_ctcdecoder(
+            list(ALPHABET)[1:],
+            lm_path,
+            alpha=alpha,
+            beta=beta
+        )
+        print('Done!')
+
+    def __call__(self, logits: torch.Tensor, input_lens: torch.Tensor) -> List[str]:
+        logits = logits.transpose(1, 2)
+        # some strange transforms to get right input for decoder
+        logits = torch.cat([logits[:, :, 1:], logits[:, :, 0].unsqueeze(2)], dim=2).numpy()
+        texts = []
+        for i, line in enumerate(tqdm(logits)):
+            line = line[:input_lens[i]]
+            text = self.decoder.decode(line)
             texts.append(text)
         return texts
 
@@ -43,26 +87,3 @@ def greedy_decoder(logits: torch.Tensor, input_lens: torch.Tensor, id2sym: Dict[
         text = ''.join(map(lambda x: id2sym[x], text))
         texts.append(text)
     return texts
-
-
-def beam_search(probs, beam_size, id2sym):
-  paths = {('', '^'): 1.0}
-  for next_char_probs in probs:
-    paths = extend_and_merge(next_char_probs, paths, id2sym)
-    paths = truncate_beam(paths, beam_size)
-  return [(prefix, score) for (prefix, _), score in sorted(paths.items(), key=lambda x: x[1], reverse=True)]
-
-
-def extend_and_merge(next_char_probs, src_paths, id2sym):
-  new_paths = defaultdict(float)
-  for next_char_ind, next_char_prob in enumerate(next_char_probs):
-    next_char = id2sym[next_char_ind]
-    for (text, last_char), path_prob in src_paths.items():
-      new_prefix = text if next_char == last_char else text + next_char
-      new_prefix = new_prefix.replace('^', '')
-      new_paths[(new_prefix, next_char)] += path_prob * next_char_prob
-  return new_paths
-
-
-def truncate_beam(paths, beam_size):
-  return dict(sorted(paths.items(), key=lambda x: x[1], reverse=True)[:beam_size])

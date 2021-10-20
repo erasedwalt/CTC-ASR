@@ -11,28 +11,27 @@ KERNEL_SIZES = {
 
 
 class SqueezeExcite(nn.Module):
+    """
+    Squeeze-and-Excitation sub-module.
+    Args:
+        channels (int): Input number of channels.
+        reduction_ratio (int): Reduction ratio for "squeeze" layer.
+        context_window (int): Integer number of timesteps that the context
+            should be computed over, using stride 1 average pooling.
+            If value < 1, then global context is computed.
+        interpolation_mode (str): Interpolation mode of timestep dimension.
+            Used only if context window is > 1.
+            The modes available for resizing are: `nearest`, `linear` (3D-only),
+            `bilinear`, `area`
+    """
     def __init__(
         self,
         channels: int,
         reduction_ratio: int,
         context_window: int = -1,
         interpolation_mode: str = 'nearest',
-    ):
-        """
-        Squeeze-and-Excitation sub-module.
-        Args:
-            channels: Input number of channels.
-            reduction_ratio: Reduction ratio for "squeeze" layer.
-            context_window: Integer number of timesteps that the context
-                should be computed over, using stride 1 average pooling.
-                If value < 1, then global context is computed.
-            interpolation_mode: Interpolation mode of timestep dimension.
-                Used only if context window is > 1.
-                The modes available for resizing are: `nearest`, `linear` (3D-only),
-                `bilinear`, `area`
-            activation: Intermediate activation function used. Must be a
-                callable activation function.
-        """
+    ) -> None:
+
         super(SqueezeExcite, self).__init__()
         self.interpolation_mode = interpolation_mode
         self.context_window = context_window
@@ -45,7 +44,7 @@ class SqueezeExcite(nn.Module):
         )
         self.gap = nn.AdaptiveAvgPool1d(1)
 
-    def forward(self, x): 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         batch, channels, timesteps = x.size()[:3]
 
         if timesteps < self.context_window:
@@ -63,8 +62,27 @@ class SqueezeExcite(nn.Module):
 
 
 class CitrinetBlock(nn.Module):
-    def __init__(self, R, C, kernel_size, stride=None, dropout=0.):
-        super().__init__()
+    """
+    Citrinet block
+    This class implements Citrinet block from the paper:
+    https://arxiv.org/pdf/2104.01721.pdf
+    Args:
+        R (int): Number of repetition of each subblock in block
+        C (int): Number of channels
+        kernel_size (int): Kernel size
+        stride (int, optional): Stride
+        dropout (float, optional): Dropout probability
+    """
+    def __init__(
+        self,
+        R: int,
+        C: int,
+        kernel_size: int,
+        stride: int = None,
+        dropout: float = 0.
+    ) -> None:
+
+        super(CitrinetBlock, self).__init__()
 
         self.R = R
 
@@ -124,7 +142,7 @@ class CitrinetBlock(nn.Module):
             nn.BatchNorm1d(num_features=C)
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = self.res_connection(x)
         for i, subblock in enumerate(self.block):
             for j, module in enumerate(subblock):
@@ -136,8 +154,30 @@ class CitrinetBlock(nn.Module):
 
 
 class Citrinet(nn.Module):
-    def __init__(self, C, K, R, num_features, vocab_size, dropout=0.):
-        super().__init__()
+    """
+    Citrinet
+    This class implements Citrinet from the paper:
+    https://arxiv.org/pdf/2104.01721.pdf
+
+    Args:
+        C (int): Number of channels
+        K (int): Type of kernel sizes
+        R (int): Number of subblocks in each block
+        num_features (int): Number of input channels
+        vocab_size (int): Vocab size
+        dropout (float, optional): Dropout probability
+    """
+    def __init__(
+        self,
+        C: int,
+        K: int,
+        R: int,
+        num_features: int,
+        vocab_size: int,
+        dropout: float = 0.
+    ) -> None:
+
+        super(Citrinet, self).__init__()
 
         self.K = KERNEL_SIZES['K' + str(K)]
         self.megablocks = [
@@ -221,7 +261,7 @@ class Citrinet(nn.Module):
             )
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
         x = self.megablock1(x)
         x = self.megablock2(x)

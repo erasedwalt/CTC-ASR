@@ -7,7 +7,15 @@ from typing import Tuple
 
 
 class AudioAugmentator:
-    def __init__(self, tempo: float, pitch: int, noise_factor: int):
+    """
+    Audio tensor augmentation class.
+
+    Args:
+        tempo (float): Range in which to time stretch audio
+        pitch (int): Range in which to pitch audio
+        noise_factor (int): Factor in which noise have to be quiter than audio
+    """
+    def __init__(self, tempo: float, pitch: int, noise_factor: int) -> None:
         self.tempo = tempo
         self.pitch = pitch
         self.noise_factor = noise_factor
@@ -27,12 +35,18 @@ class AudioAugmentator:
         noise = self.noiser.sample(audio.shape)
         noise = (noise / torch.norm(noise)) * noise_norm
         audio += noise
-
         return audio, r
 
 
 class SpecAugmentator:
-    def __init__(self, time: int, freq: int):
+    """
+    Spectrogram tensor augmentation class.
+
+    Args:
+        time (int): Range of number of channels in time axis to be zeroed
+        freq (int): Range of number of channels in frequency axis to be zeroed
+    """
+    def __init__(self, time: int, freq: int) -> None:
         self.time = time
         self.freq = freq
 

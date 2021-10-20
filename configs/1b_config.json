@@ -3,12 +3,11 @@
   "logging": "",
   "chkpt_path": "",
   "epochs": 1,
-  "decoder": "GreedyDecoder",
   "arch": {
-    "name": "QuartzNet",
+    "name": "Jasper",
     "args": {
       "B_repeats": 1,
-      "R": 5,
+      "R": 3,
       "num_features": 64,
       "vocab_size": 28
     }
@@ -48,9 +47,13 @@
     "name": "CTCLoss",
     "args": {}
   },
+  "decoder": {
+    "name": "GreedyDecoder",
+    "args": {}
+  },
   "clip_grad": 10,
   "best_wer": 1,
   "device": "cuda",
-  "device_ids": [0],
+  "device_ids": [1],
   "eval_interval": 200
 }
