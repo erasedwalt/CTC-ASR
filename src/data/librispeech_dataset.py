@@ -3,8 +3,23 @@ import torchaudio
 from torch.utils.data import Dataset
 from torchaudio.datasets import LIBRISPEECH
 
+import os
+import subprocess
+
 from utils import preprocess_text, get_maps
 from augmentations import AudioAugmentator, SpecAugmentator
+
+
+def download_librispeech(part):
+    if 'datasets' not in os.listdir('../'):
+        subprocess.run(['mkdir', '../datasets'])
+    print('Download dataset...')
+    subprocess.run(['wget', '-O', f'../datasets/{part}.tar.gz', f'https://www.openslr.org/resources/12/{part}.tar.gz'])
+    print('Done!')
+    print('Unarchive dataset...')
+    subprocess.run(['tar', '-xf', f'../datasets/{part}.tar.gz', '-C', '../datasets/'])
+    print('Done!')
+    return '../datasets/'
 
 
 class LibriSpeechDataset(Dataset):
@@ -22,6 +37,9 @@ class LibriSpeechDataset(Dataset):
         time: int = 30,
         freq: int = 10
     ) -> None:
+
+        if len(path) == 0:
+            path = download_librispeech(part)
 
         self.dataset = LIBRISPEECH(path, part)
         self.computer = torchaudio.transforms.MelSpectrogram(

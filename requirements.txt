@@ -1,10 +1,11 @@
-pandas==1.2.5
-tqdm==4.62.3
+wandb
+numpy
+pandas
+tqdm
 torch_optimizer==0.1.0
 torchaudio==0.9.0
 pyctcdecode==0.1.1
 pypi_kenlm==0.1.20210121
 torch==1.9.0+cu111
 editdistance==0.5.3
-numpy==1.13.3
 fast_ctc_decode==0.3.0
