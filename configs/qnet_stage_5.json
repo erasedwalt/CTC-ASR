@@ -1,7 +1,7 @@
 {
   "name": "qnet_stage_5",
   "logging": "WandbLogger",
-  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
+  "wandb_key": "<YOUR WANDB KEY>",
   "wandb_project": "QuartzNet-LibriSpeech",
   "chkpt_path": "../chkpt/qnet_stage_4_best.pt",
   "epochs": 1000000,

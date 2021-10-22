@@ -1,8 +1,8 @@
 {
   "name": "qnet_stage_1",
   "logging": "WandbLogger",
-  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
-  "wandb_project": "QuartzNet-LibriSpeech",
+  "wandb_key": "<YOUR WANDB KEY>",
+  "wandb_project": "QuartzNet-LJ",
   "chkpt_path": "",
   "epochs": 1000000,
   "arch": {
@@ -33,7 +33,7 @@
     ],
     "test": [
       {
-        "name": "LibriSpeechDataset",
+        "name": "LJSpeechDataset",
 	"args": {
 	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets/LJSpeech-1.1"
 	}

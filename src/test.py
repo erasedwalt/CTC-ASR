@@ -106,8 +106,8 @@ if __name__ == '__main__':
         path = args.ds
     else:
         path = ''
-    dataset_clean = LibriSpeechDataset('test', args.ds, 'test-clean')
-    dataset_other = LibriSpeechDataset('test', args.ds, 'test-other')
+    dataset_clean = LibriSpeechDataset('test', path, 'test-clean')
+    dataset_other = LibriSpeechDataset('test', path, 'test-other')
     dataloader_clean = DataLoader(dataset_clean, batch_size=32, drop_last=False, shuffle=False, collate_fn=Collater('QuartzNet'), num_workers=20)
     dataloader_other = DataLoader(dataset_other, batch_size=32, drop_last=False, shuffle=False, collate_fn=Collater('QuartzNet'), num_workers=20)
 
