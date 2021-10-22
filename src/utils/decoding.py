@@ -33,7 +33,7 @@ class BeamSearchDecoder:
     def __call__(self, logits: torch.Tensor, input_lens: torch.Tensor) -> List[str]:
         logits = logits.transpose(1, 2)
         texts = []
-        for i, line in enumerate(tqdm(logits)):
+        for i, line in enumerate(logits):
             line = line[:input_lens[i]]
             text = beam_search(line.exp().numpy(), ALPHABET, beam_size=self.beam_size)[0]
             texts.append(text)
@@ -65,7 +65,7 @@ class LMBeamSearchDecoder:
         # some strange transforms to get right input for decoder
         logits = torch.cat([logits[:, :, 1:], logits[:, :, 0].unsqueeze(2)], dim=2).numpy()
         texts = []
-        for i, line in enumerate(tqdm(logits)):
+        for i, line in enumerate(logits):
             line = line[:input_lens[i]]
             text = self.decoder.decode(line)
             texts.append(text)

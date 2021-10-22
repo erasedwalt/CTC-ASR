@@ -10,6 +10,9 @@ from typing import Dict
 from configs import Config
 from metrics import wer, cer
 from utils import get_maps
+from models import QuartzNet
+from data import LibriSpeechDataset, Collater
+from utils import GreedyDecoder, BeamSearchDecoder, LMBeamSearchDecoder
 
 
 SEED = 123
@@ -25,7 +28,8 @@ def evaluate(
         dataloader: DataLoader,
         device: str,
         id2sym: Dict[int, str],
-        decoder
+        decoder,
+        output_name: str
 ) -> float:
 
     model.eval()
@@ -54,7 +58,7 @@ def evaluate(
         aver_wer = np.mean(total_wer)
         aver_cer = np.mean(total_cer)
         aver_test_loss /= len(dataloader)
-        with open('output.txt', 'w') as fp:
+        with open(output_name, 'w') as fp:
             fp.write(''.join(output))
     print(f'WER: {aver_wer: .3f}\nCER: {aver_cer: .3f}\nLoss {aver_test_loss: .3f}')
 
@@ -62,24 +66,59 @@ def evaluate(
 def _parse_args():
     parser = argparse.ArgumentParser(description='Test argparser')
     parser.add_argument(
-        '-c', '--config',
-        help='Path to config',
+        '--chkpt',
+        help='Path to model checkpoint',
         required=True
+    )
+    parser.add_argument(
+        '--ds',
+        help='Path to LibriSpeech dataset',
+        required=False
+    )
+    parser.add_argument(
+        '--decoder',
+        help='Path to language model',
+        required=False
+    )
+    parser.add_argument(
+        '--device',
+        help='GPU number',
+        required=False
     )
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = _parse_args()
-    config = Config(args.config)
 
+    if args.device:
+        device = torch.device('cuda:' + args.device)
+    else:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
     id2sym, sym2id = get_maps()
 
-    model = config.get_model()
-    _, _ = config.get_optimizer(model.parameters())
-    criterion = config.get_criterion()
-    _ = config.get_logger()
-    _, test_dataloader = config.get_dataloaders()
-    decoder = config.get_decoder()
+    model = QuartzNet(1, 5, 64, 28)
+    model.load_state_dict(torch.load(args.chkpt, map_location=device))
+    model.to(device)
+    criterion = nn.CTCLoss()
 
-    evaluate(model, criterion, test_dataloader, config.device, id2sym, decoder)
+    if args.ds:
+        path = args.ds
+    else:
+        path = ''
+    dataset_clean = LibriSpeechDataset('test', args.ds, 'test-clean')
+    dataset_other = LibriSpeechDataset('test', args.ds, 'test-other')
+    dataloader_clean = DataLoader(dataset_clean, batch_size=32, drop_last=False, shuffle=False, collate_fn=Collater('QuartzNet'), num_workers=20)
+    dataloader_other = DataLoader(dataset_other, batch_size=32, drop_last=False, shuffle=False, collate_fn=Collater('QuartzNet'), num_workers=20)
+
+    if args.decoder == 'greedy':
+        decoder = GreedyDecoder()
+    elif args.decoder == 'vanilla':
+        decoder = BeamSearchDecoder(beam_size=100)
+    else:
+        decoder = LMBeamSearchDecoder(args.decoder, beam_size=100)
+
+    print('test-clean results:')
+    evaluate(model, criterion, dataloader_clean, device, id2sym, decoder, 'output_clean.txt')
+    print('\ntest-other results:')
+    evaluate(model, criterion, dataloader_other, device, id2sym, decoder, 'output_other.txt')

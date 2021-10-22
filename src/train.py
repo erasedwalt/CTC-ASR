@@ -168,7 +168,8 @@ if __name__ == '__main__':
     optimizer, scheduler = config.get_optimizer(model.parameters())
     criterion = config.get_criterion()
     logger = config.get_logger()
-    train_dataloader, test_dataloader = config.get_dataloaders()
+    train_dataloader = config.get_dataloaders('train')
+    test_dataloader = config.get_dataloaders('test')
     decoder = config.get_decoder()
 
     train(config.epochs, model, optimizer, scheduler, criterion, train_dataloader,

@@ -55,9 +55,11 @@ class WandbLogger:
         """
         wandb.log({name: wandb.Html(text.replace('\n', '<br>'))})
 
-    def init_datasets(self, train_dataset: Dataset, test_dataset: Dataset) -> None:
+    def init_datasets(self, task: str, dataset: Dataset) -> None:
         """
         Initialize datasets to use in `log_spec_and_audio`.
         """
-        self.train_dataset = train_dataset
-        self.test_dataset = test_dataset
+        if task == 'train':
+            self.train_dataset = dataset
+        elif task == 'test':
+            self.test_dataset = dataset

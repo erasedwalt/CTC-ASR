@@ -3,6 +3,9 @@ import math
 from torch.optim.lr_scheduler import _LRScheduler
 
 
+########## TAKEN FROM https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup ##########
+
+
 class CosineAnnealingWarmup(_LRScheduler):
     """
     Cosine Annealing optimizer with warmup

@@ -1,0 +1,69 @@
+{
+  "name": "qnet_stage_1",
+  "logging": "WandbLogger",
+  "wandb_key": "ed8c78ce5eb5a5b2230bdcb0310e429f813cc0cb",
+  "wandb_project": "QuartzNet-LibriSpeech",
+  "chkpt_path": "",
+  "epochs": 1000000,
+  "arch": {
+    "name": "QuartzNet",
+    "args": {
+      "B_repeats": 1,
+      "R": 5,
+      "num_features": 64,
+      "vocab_size": 28
+    }
+  },
+  "optimizer": {
+    "name": "Adam",
+    "args": {
+      "lr": 3e-4,
+      "weight_decay": 0.0
+    },
+    "warmup": 100
+  },
+  "data": {
+    "train": [
+      {
+        "name": "LJSpeechDataset",
+	"args": {
+	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets/LJSpeech-1.1"
+	}
+      }
+    ],
+    "test": [
+      {
+        "name": "LibriSpeechDataset",
+	"args": {
+	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets/LJSpeech-1.1"
+	}
+      }
+    ],
+    "train_shuffle": true,
+    "bsz": 32,
+    "num_workers": 20,
+    "train_args":{
+      "sample_rate": 16000,
+      "n_mels": 64,
+      "augmentation": false
+    },
+    "test_args": {
+      "sample_rate": 16000,
+      "n_mels": 64,
+      "augmentation": false
+    }
+  },
+  "criterion": {
+    "name": "CTCLoss",
+    "args": {}
+  },
+  "decoder": {
+    "name": "GreedyDecoder",
+    "args": {}
+  },
+  "clip_grad": 10,
+  "best_wer": 1,
+  "device": "cuda",
+  "device_ids": [3, 2],
+  "eval_interval": 300
+}

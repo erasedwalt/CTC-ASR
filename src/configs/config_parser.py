@@ -39,6 +39,7 @@ class Config:
         self.eval_interval = self.config['eval_interval']
         self.best_wer = float(self.config['best_wer'])
         self.epochs = self.config['epochs']
+        self.logger = None
         print(self.config)
 
 
@@ -72,52 +73,38 @@ class Config:
         print(f'Trainable parameters: {trainable_params}')
         return model
 
-    def get_dataloaders(self) -> Tuple[DataLoader]:
+    def get_dataloaders(self, task: str) -> DataLoader:
         """
         Create train and test dataloaders.
         """
+        if task == 'train':
+            drop_last = True
+            shuffle = self.config['data']['train_shuffle']
+        elif task == 'test':
+            drop_last = False
+            shuffle = False
         collater = Collater(self.config['arch']['name'])
-        train_datasets = []
-        for train_dataset_info in self.config['data']['train']:
-            train_dataset_class = getattr(data, train_dataset_info['name'])
-            train_dataset = train_dataset_class('train', **train_dataset_info['args'], **self.config['data']['train_args'])
-            train_datasets.append(train_dataset)
-        if len(train_datasets) == 1:
-            train_dataset = train_datasets[0]
+        datasets = []
+        for dataset_info in self.config['data'][task]:
+            dataset_class = getattr(data, dataset_info['name'])
+            dataset = dataset_class(task, **dataset_info['args'], **self.config['data'][f'{task}_args'])
+            datasets.append(dataset)
+        if len(datasets) == 1:
+            dataset = datasets[0]
         else:
-            train_dataset = ConcatDataset(train_datasets)
+            dataset = ConcatDataset(datasets)
 
-        train_dataloader = DataLoader(
-            train_dataset,
+        dataloader = DataLoader(
+            dataset,
             batch_size=self.config['data']['bsz'],
-            shuffle=self.config['data']['train_shuffle'],
+            shuffle=shuffle,
             collate_fn=collater,
             num_workers=self.config['data']['num_workers'],
-            drop_last=True
-        )
-
-        test_datasets = []
-        for test_dataset_info in self.config['data']['test']:
-            test_dataset_class = getattr(data, test_dataset_info['name'])
-            test_dataset = test_dataset_class('test', **test_dataset_info['args'], **self.config['data']['test_args'])
-            test_datasets.append(test_dataset)
-        if  len(test_datasets) == 1:
-            test_dataset = test_datasets[0]
-        else:
-            test_dataset = ConcatDataset(test_datasets)
-
-        test_dataloader = DataLoader(
-            test_dataset,
-            batch_size=self.config['data']['bsz'],
-            shuffle=False,
-            collate_fn=collater,
-            num_workers=self.config['data']['num_workers'],
-            drop_last=False
+            drop_last=drop_last
         )
         if self.logger:
-            self.logger.init_datasets(train_dataset, test_dataset)
-        print('Dataloaders are ready')
-        return train_dataloader, test_dataloader
+            self.logger.init_datasets(task, dataset)
+        return dataloader
 
     def get_optimizer(self, model_parameters: Generator) -> torch.optim.Optimizer:
         """

@@ -13,6 +13,8 @@ from augmentations import AudioAugmentator, SpecAugmentator
 def download_librispeech(part):
     if 'datasets' not in os.listdir('../'):
         subprocess.run(['mkdir', '../datasets'])
+    if 'LibriSpeech' in os.listdir('../datasets') and part in os.listdir('../datasets/LibriSpeech'):
+        return '../datasets/'
     print('Download dataset...')
     subprocess.run(['wget', '-O', f'../datasets/{part}.tar.gz', f'https://www.openslr.org/resources/12/{part}.tar.gz'])
     print('Done!')
