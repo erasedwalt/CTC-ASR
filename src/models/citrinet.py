@@ -10,6 +10,9 @@ KERNEL_SIZES = {
 }
 
 
+########## SQUEEZE-EXCITE TAKEN FROM https://github.com/NVIDIA/NeMo/blob/main/nemo/collections/asr/parts/submodules/jasper.py ##########
+
+
 class SqueezeExcite(nn.Module):
     """
     Squeeze-and-Excitation sub-module.

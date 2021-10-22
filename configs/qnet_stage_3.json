@@ -1,6 +1,6 @@
 {
   "name": "qnet_stage_3",
-  "logging": "WandbLogger",
+  "logging": "",
   "wandb_key": "<YOUR WANDB KEY>",
   "wandb_project": "QuartzNet-LibriSpeech",
   "chkpt_path": "../chkpt/qnet_stage_2_best.pt",
@@ -36,21 +36,21 @@
       {
         "name": "LibriSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets",
+	  "path": "",
 	  "part": "train-clean-100"
 	}
       },
       {
         "name": "LibriSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets",
+	  "path": "",
 	  "part": "train-clean-360"
 	}
       },
       {
         "name": "LibriSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets",
+	  "path": "",
 	  "part": "train-other-500"
 	}
       }
@@ -59,7 +59,7 @@
       {
         "name": "LibriSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets",
+	  "path": "",
 	  "part": "test-clean"
 	}
       }
@@ -89,6 +89,6 @@
   "clip_grad": 10,
   "best_wer": 0.23,
   "device": "cuda",
-  "device_ids": [3, 2],
+  "device_ids": [0],
   "eval_interval": 500
 }

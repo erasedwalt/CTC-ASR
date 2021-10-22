@@ -60,7 +60,7 @@ def evaluate(
         aver_test_loss /= len(dataloader)
         with open(output_name, 'w') as fp:
             fp.write(''.join(output))
-    print(f'WER: {aver_wer: .3f}\nCER: {aver_cer: .3f}\nLoss {aver_test_loss: .3f}')
+    print(f'WER: {aver_wer: .5f}\nCER: {aver_cer: .5f}\nLoss {aver_test_loss: .5f}')
 
 
 def _parse_args():

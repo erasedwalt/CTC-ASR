@@ -1,7 +1,22 @@
 import os
+import subprocess
 import pandas as pd
 
 from .base_dataset import BaseDataset
+
+
+def download_lj_speech():
+    if 'datasets' not in os.listdir('../'):
+        subprocess.run(['mkdir', '../datasets'])
+    if 'LJSpeech' in os.listdir('../datasets'):
+        return '../datasets/LJSpeech'
+    print('Download dataset...')
+    subprocess.run(['wget', '-O', f'../datasets/LJSpeech.tar.bz2', 'https://data.keithito.com/data/speech/LJSpeech-1.1.tar.bz2'])
+    print('Done!')
+    print('Unarchive dataset...')
+    subprocess.run(['tar', '-xf', '../datasets/LJSpeech.tar.bz2', '-C', '../datasets/'])
+    print('Done!')
+    return '../datasets/LJSpeech'
 
 
 class LJSpeechDataset(BaseDataset):
@@ -18,6 +33,9 @@ class LJSpeechDataset(BaseDataset):
             time: int = 30,
             freq: int = 10
     ) -> None:
+
+        if len(path) == 0:
+            path = download_lj_speech()
 
         self.task = task
         self.path = path

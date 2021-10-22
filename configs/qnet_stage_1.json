@@ -1,6 +1,6 @@
 {
   "name": "qnet_stage_1",
-  "logging": "WandbLogger",
+  "logging": "",
   "wandb_key": "<YOUR WANDB KEY>",
   "wandb_project": "QuartzNet-LJ",
   "chkpt_path": "",
@@ -27,7 +27,7 @@
       {
         "name": "LJSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets/LJSpeech-1.1"
+	  "path": ""
 	}
       }
     ],
@@ -35,7 +35,7 @@
       {
         "name": "LJSpeechDataset",
 	"args": {
-	  "path": "/NEW_HDD/HDD_3TB/msemenov/asr_datasets/LJSpeech-1.1"
+	  "path": ""
 	}
       }
     ],
@@ -64,6 +64,6 @@
   "clip_grad": 10,
   "best_wer": 1,
   "device": "cuda",
-  "device_ids": [3, 2],
+  "device_ids": [0],
   "eval_interval": 300
 }
