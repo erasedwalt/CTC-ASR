@@ -33,7 +33,7 @@
 
 Для удобства проверки сделал [ноутбук](https://colab.research.google.com/drive/1a21E7wNWBGRjOzb7paU_meLeJ3z10NQR?usp=sharing).
 
-Для установки зависимостей достаточно сделать:
+Предварительно в корне репозитория нужно создать папки `chkpt` и `lm`. Для установки зависимостей достаточно сделать:
 
 ```
 pip3 install -r requirements.txt
