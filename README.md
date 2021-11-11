@@ -26,7 +26,6 @@ can start training with
 ```
 python3 train.py -c /path/to/config.json
 ```
-where decoding name is one of `greedy` or `vanilla`.
 ### Test
 
 You can test your model on LibriSpeech dataset with 
@@ -34,6 +33,8 @@ You can test your model on LibriSpeech dataset with
 ```
 python3 test.py --chkpt /path/to/chkpt --decoder <decoding-name or path to lm>
 ```
+
+where decoding name is one of `greedy` or `vanilla`. If you want to use shallow fusion write the path to LM.
 
 ## Pretrained models
 
